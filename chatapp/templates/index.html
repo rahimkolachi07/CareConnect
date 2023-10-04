@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask-SocketIO Example</title>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"
+        integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
+        crossorigin="anonymous"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #282a36;
+            color: #f8f8f2;
+            font-family: 'Arial', sans-serif;
+        }
+
+        #landing {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        #landing input,
+        #chat input {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin: 5px;
+            width: 80%;
+        }
+
+        #landing button,
+        #chat button {
+            padding: 10px 20px;
+            background-color: #50fa7b;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #landing button:hover,
+        #chat button:hover {
+            background-color: #69ff94;
+        }
+
+        #chat {
+            width: 50%;
+            background-color: #44475a;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        }
+
+        ul {
+            height: 500px;
+            background-color: #f8f8f2;
+            overflow-y: scroll;
+            padding: 10px;
+            border-radius: 10px;
+            margin: 0;
+        }
+
+        li {
+            list-style: none;
+            padding: 5px 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+
+        .my-message {
+            text-align: right;
+            background-color: #D21404;
+        }
+
+        .other-message {
+            text-align: left;
+            background-color: #2D0681 ;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="landing">
+        <input type="text" id="username" placeholder="Username">
+        <button id="join-btn">JOIN</button>
+    </div>
+
+    <div id="chat" style="display:none;">
+        <ul id="chat-messages">
+        </ul>
+        <input type="text" id="message" placeholder="Enter a Message">
+    </div>
+    <script>
+        const socket = io({ autoConnect: false });
+        let currentUsername = null;
+
+        document.getElementById("join-btn").addEventListener("click", function () {
+            currentUsername = document.getElementById("username").value;
+            socket.connect();
+
+            socket.on("connect", function () {
+                socket.emit("user_join", currentUsername);
+            })
+
+            document.getElementById("chat").style.display = "block";
+            document.getElementById("landing").style.display = "none";
+        })
+
+        document.getElementById("message").addEventListener("keyup", function (event) {
+            if (event.key == "Enter") {
+                let message = document.getElementById("message").value;
+                socket.emit("new_message", { username: currentUsername, message: message });
+                document.getElementById("message").value = "";
+            }
+        })
+
+        socket.on("chat", function (data) {
+            let ul = document.getElementById("chat-messages");
+            let li = document.createElement("li");
+            li.appendChild(document.createTextNode(data["username"] + ": " + data["message"]));
+
+            if (data["username"] === currentUsername) {
+                li.className = "my-message";
+            } else {
+                li.className = "other-message";
+            }
+
+            ul.appendChild(li);
+            ul.scrollTop = ul.scrollHeight;
+        })
+    </script>
+</body>
+
+</html>
