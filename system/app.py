@@ -2,8 +2,7 @@ import speech_recognition as sr
 import pyttsx3
 import openai
 
-# Set your API key here
-openai.api_key = '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'
+openai.api_key = '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'
 
 def listen():
     recognizer = sr.Recognizer()
@@ -24,7 +23,7 @@ def recognize(audio):
     except sr.UnknownValueError:
         return None
 
-def respond(command):
+def respond(command,company):
     print(f"You said: {command}")
     
     # Using a prompt template
@@ -37,11 +36,9 @@ def respond(command):
         model="gpt-3.5-turbo",  # Specify the GPT-3.5 Turbo engine
         messages=[
             {"role": "system", "content": "You are a customer care person"},
-            {"role": "system", "content": "your company is PTCL"},
-            {"role": "system", "content": "give response like customar care peope do, like greetings and endings"},
+            {"role": "system", "content": f"your company is {company}"},
             {"role": "system", "content": "show expressions as humans do"},
             {"role": "system", "content": "response must be shorter as possible as"},
-            {"role": "system", "content": "in last ask user is anything to ask if you asks then give response if user end the commnunication write thank you so much"},
             {"role": "user", "content": command}
         ]
     )
@@ -54,10 +51,11 @@ def speak(text):
     engine.runAndWait()
 
 if __name__ == "__main__":
+    company=input("INPUT YOUR COMPANY Name")
     while True:
         audio = listen()
         command = recognize(audio)
         if None == command:
             pass
         else:
-            respond(command)
+            respond(command,company)
